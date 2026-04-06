@@ -1,0 +1,339 @@
+import { Form, Button, Card, Row, Col, Nav, Tab } from 'react-bootstrap';
+import { useState } from 'react';
+
+const Settings = () => {
+  // Profile settings
+  const [profile, setProfile] = useState({
+    name: 'Admin User',
+    email: 'admin@company.com',
+    phone: '081-234-5678',
+    avatar: null
+  });
+
+  // System settings
+  const [system, setSystem] = useState({
+    language: 'th',
+    timezone: 'Asia/Bangkok',
+    dateFormat: 'DD/MM/YYYY',
+    currency: 'THB'
+  });
+
+  // Notification settings
+  const [notifications, setNotifications] = useState({
+    emailNotify: true,
+    smsNotify: false,
+    pushNotify: true,
+    weeklyReport: true,
+    monthlyReport: false
+  });
+
+  // Security settings
+  const [security, setSecurity] = useState({
+    twoFactor: false,
+    sessionTimeout: '30',
+    loginAlert: true
+  });
+
+  const handleProfileChange = (field, value) => {
+    setProfile(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSystemChange = (field, value) => {
+    setSystem(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNotificationChange = (field, value) => {
+    setNotifications(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSecurityChange = (field, value) => {
+    setSecurity(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = () => {
+    alert('บันทึกการตั้งค่าเรียบร้อยแล้ว');
+    console.log({ profile, system, notifications, security });
+  };
+
+  return (
+    <div className="p-4" style={{ width: '100%', minHeight: '100vh', marginLeft: '14rem' }}>
+      <h3 className="mb-4">
+        <i className="bi bi-gear me-2"></i>
+        ตั้งค่าระบบ
+      </h3>
+
+      <Tab.Container defaultActiveKey="profile">
+        <Row>
+          <Col md={3}>
+            <Card className="mb-3">
+              <Card.Body className="p-0">
+                <Nav variant="pills" className="flex-column">
+                  <Nav.Item>
+                    <Nav.Link eventKey="profile" className="d-flex align-items-center p-3">
+                      <i className="bi bi-person-circle me-2"></i>
+                      ข้อมูลส่วนตัว
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="system" className="d-flex align-items-center p-3">
+                      <i className="bi bi-gear me-2"></i>
+                      ระบบ
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="notifications" className="d-flex align-items-center p-3">
+                      <i className="bi bi-bell me-2"></i>
+                      การแจ้งเตือน
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="security" className="d-flex align-items-center p-3">
+                      <i className="bi bi-shield-lock me-2"></i>
+                      ความปลอดภัย
+                    </Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col md={9}>
+            <Tab.Content>
+              {/* Profile Tab */}
+              <Tab.Pane eventKey="profile">
+                <Card>
+                  <Card.Header className="bg-white">
+                    <h5 className="mb-0">ข้อมูลส่วนตัว</h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <Row className="mb-4">
+                      <Col md={3} className="text-center">
+                        <div 
+                          className="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2"
+                          style={{ width: '100px', height: '100px' }}
+                        >
+                          <i className="bi bi-person-fill text-white" style={{ fontSize: '3rem' }}></i>
+                        </div>
+                        <Button variant="outline-primary" size="sm">
+                          <i className="bi bi-camera me-1"></i>
+                          เปลี่ยนรูป
+                        </Button>
+                      </Col>
+                      <Col md={9}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>ชื่อ-นามสกุล</Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={profile.name}
+                            onChange={(e) => handleProfileChange('name', e.target.value)}
+                          />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                          <Form.Label>อีเมล</Form.Label>
+                          <Form.Control
+                            type="email"
+                            value={profile.email}
+                            onChange={(e) => handleProfileChange('email', e.target.value)}
+                          />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                          <Form.Label>เบอร์โทรศัพท์</Form.Label>
+                          <Form.Control
+                            type="tel"
+                            value={profile.phone}
+                            onChange={(e) => handleProfileChange('phone', e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+              </Tab.Pane>
+
+              {/* System Tab */}
+              <Tab.Pane eventKey="system">
+                <Card>
+                  <Card.Header className="bg-white">
+                    <h5 className="mb-0">ตั้งค่าระบบ</h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>ภาษา</Form.Label>
+                          <Form.Select
+                            value={system.language}
+                            onChange={(e) => handleSystemChange('language', e.target.value)}
+                          >
+                            <option value="th">ไทย</option>
+                            <option value="en">English</option>
+                          </Form.Select>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>เขตเวลา</Form.Label>
+                          <Form.Select
+                            value={system.timezone}
+                            onChange={(e) => handleSystemChange('timezone', e.target.value)}
+                          >
+                            <option value="Asia/Bangkok">Asia/Bangkok (UTC+7)</option>
+                            <option value="Asia/Singapore">Asia/Singapore (UTC+8)</option>
+                            <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+                          </Form.Select>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>รูปแบบวันที่</Form.Label>
+                          <Form.Select
+                            value={system.dateFormat}
+                            onChange={(e) => handleSystemChange('dateFormat', e.target.value)}
+                          >
+                            <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                          </Form.Select>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>สกุลเงิน</Form.Label>
+                          <Form.Select
+                            value={system.currency}
+                            onChange={(e) => handleSystemChange('currency', e.target.value)}
+                          >
+                            <option value="THB">บาท (THB)</option>
+                            <option value="USD">ดอลลาร์ (USD)</option>
+                            <option value="EUR">ยูโร (EUR)</option>
+                          </Form.Select>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+              </Tab.Pane>
+
+              {/* Notifications Tab */}
+              <Tab.Pane eventKey="notifications">
+                <Card>
+                  <Card.Header className="bg-white">
+                    <h5 className="mb-0">การแจ้งเตือน</h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <h6 className="text-muted mb-3">ช่องทางการแจ้งเตือน</h6>
+                    <Form.Check
+                      type="switch"
+                      id="emailNotify"
+                      label="แจ้งเตือนทางอีเมล"
+                      checked={notifications.emailNotify}
+                      onChange={(e) => handleNotificationChange('emailNotify', e.target.checked)}
+                      className="mb-3"
+                    />
+                    <Form.Check
+                      type="switch"
+                      id="smsNotify"
+                      label="แจ้งเตือนทาง SMS"
+                      checked={notifications.smsNotify}
+                      onChange={(e) => handleNotificationChange('smsNotify', e.target.checked)}
+                      className="mb-3"
+                    />
+                    <Form.Check
+                      type="switch"
+                      id="pushNotify"
+                      label="Push Notification"
+                      checked={notifications.pushNotify}
+                      onChange={(e) => handleNotificationChange('pushNotify', e.target.checked)}
+                      className="mb-3"
+                    />
+
+                    <hr />
+
+                    <h6 className="text-muted mb-3">รายงาน</h6>
+                    <Form.Check
+                      type="switch"
+                      id="weeklyReport"
+                      label="รายงานประจำสัปดาห์"
+                      checked={notifications.weeklyReport}
+                      onChange={(e) => handleNotificationChange('weeklyReport', e.target.checked)}
+                      className="mb-3"
+                    />
+                    <Form.Check
+                      type="switch"
+                      id="monthlyReport"
+                      label="รายงานประจำเดือน"
+                      checked={notifications.monthlyReport}
+                      onChange={(e) => handleNotificationChange('monthlyReport', e.target.checked)}
+                      className="mb-3"
+                    />
+                  </Card.Body>
+                </Card>
+              </Tab.Pane>
+
+              {/* Security Tab */}
+              <Tab.Pane eventKey="security">
+                <Card className="mb-3">
+                  <Card.Header className="bg-white">
+                    <h5 className="mb-0">ความปลอดภัย</h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <Form.Check
+                      type="switch"
+                      id="loginAlert"
+                      label="แจ้งเตือนเมื่อมีการเข้าสู่ระบบจากอุปกรณ์ใหม่"
+                      checked={security.loginAlert}
+                      onChange={(e) => handleSecurityChange('loginAlert', e.target.checked)}
+                      className="mb-3"
+                    />
+
+                    <Form.Group className="mb-3">
+                      <Form.Label>หมดเวลาเซสชัน (นาที)</Form.Label>
+                      <Form.Select
+                        value={security.sessionTimeout}
+                        onChange={(e) => handleSecurityChange('sessionTimeout', e.target.value)}
+                        style={{ width: '200px' }}
+                      >
+                        <option value="15">15 นาที</option>
+                        <option value="30">30 นาที</option>
+                        <option value="60">1 ชั่วโมง</option>
+                        <option value="120">2 ชั่วโมง</option>
+                      </Form.Select>
+                    </Form.Group>
+
+                    <hr />
+
+                    <h6 className="text-muted mb-3">เปลี่ยนรหัสผ่าน</h6>
+                    <Form.Group className="mb-3">
+                      <Form.Label>รหัสผ่านปัจจุบัน</Form.Label>
+                      <Form.Control type="password" style={{ width: '300px' }} />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>รหัสผ่านใหม่</Form.Label>
+                      <Form.Control type="password" style={{ width: '300px' }} />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>ยืนยันรหัสผ่านใหม่</Form.Label>
+                      <Form.Control type="password" style={{ width: '300px' }} />
+                    </Form.Group>
+                    <Button variant="outline-primary">เปลี่ยนรหัสผ่าน</Button>
+                  </Card.Body>
+                </Card>
+              </Tab.Pane>
+            </Tab.Content>
+
+            {/* Save Button */}
+            <div className="d-flex justify-content-end mt-3">
+              <Button variant="secondary" className="me-2">ยกเลิก</Button>
+              <Button variant="primary" onClick={handleSave}>
+                <i className="bi bi-check-lg me-1"></i>
+                บันทึกการตั้งค่า
+              </Button>
+            </div>
+          </Col>
+        </Row>
+      </Tab.Container>
+    </div>
+  );
+};
+
+export default Settings;
