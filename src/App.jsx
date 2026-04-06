@@ -36,7 +36,9 @@ const getDashboardPath = (userType) => {
     case 'admin': return '/admin';
     case 'manager': return '/manager';
     case 'leader': return '/leader';
-    case 'user': default: return '/user';
+    case 'user': return '/user';
+    // ถ้า Role ไม่ตรงกับอะไรเลย ให้เด้งกลับไปหน้า login เพื่อตัด Loop
+    default: return '/login';
   }
 };
 
@@ -53,9 +55,21 @@ export default function App() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  const handleLogin = (username, type) => {
+  // [แก้ไข 2] รับค่า user เป็น Object และ Mapping Role ให้ตรงกัน
+  const handleLogin = (user) => {
     setIsAuthenticated(true);
-    setUserType(type);
+
+    // ดึง role มาจากฐานข้อมูล
+    let currentRole = user.role;
+
+    // แปลงชื่อ Role จาก Database ให้ตรงกับ Route ของ Frontend
+    if (currentRole === 'supervisor') {
+      currentRole = 'manager';
+    } else if (currentRole === 'technician') {
+      currentRole = 'user';
+    }
+
+    setUserType(currentRole);
   };
 
   const handleLogout = () => {
