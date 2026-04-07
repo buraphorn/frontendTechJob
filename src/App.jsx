@@ -20,7 +20,7 @@ import ManagerDashboard from "./Manager/ManagerDashboard.jsx";
 import ManagerLayout from "./layouts/ManagerLayout.jsx";
 import ManagerRecord from "./Manager/ManagerRecord.jsx";
 import ManagerAccount from "./Manager/ManagerAccount.jsx";
-import ManagerInventory from './components/ManagerInventory'
+import ManagerInventory from './Manager/ManagerInventory'
 import ManagerSetting from "./Manager/ManagerSetting.jsx";
 
 import LeaderDashboard from "./Leader/LeaderDashboard.jsx";
@@ -56,21 +56,9 @@ export default function App() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  // [แก้ไข 2] รับค่า user เป็น Object และ Mapping Role ให้ตรงกัน
   const handleLogin = (user) => {
     setIsAuthenticated(true);
-
-    // ดึง role มาจากฐานข้อมูล
-    let currentRole = user.role;
-
-    // แปลงชื่อ Role จาก Database ให้ตรงกับ Route ของ Frontend
-    if (currentRole === 'supervisor') {
-      currentRole = 'manager';
-    } else if (currentRole === 'technician') {
-      currentRole = 'user';
-    }
-
-    setUserType(currentRole);
+    setUserType(user.role);
   };
 
   const handleLogout = () => {

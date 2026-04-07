@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Search, Tool, FileText } from 'lucide-react';
+import { Package, Search, Wrench, FileText } from 'lucide-react';
 import axios from 'axios'; // แนะนำให้ใช้ axios หรือใช้ fetch แบบปกติก็ได้
 
 const ManagerInventory = () => {
@@ -12,7 +12,7 @@ const ManagerInventory = () => {
         const fetchInventory = async () => {
             try {
                 // ยิง API ไปที่ Backend ของเรา
-                const response = await axios.get('http://localhost:5000/api/manager/inventory');
+                const response = await axios.get('http://localhost:3000/api/manager/inventory');
                 setInventoryLogs(response.data);
                 setLoading(false);
             } catch (error) {
@@ -87,7 +87,7 @@ const ManagerInventory = () => {
                                     </span>
                                 </div>
                                 <div className="col-span-2 flex items-center gap-2 text-sm text-slate-600">
-                                    <Tool size={14} className="text-slate-400" /> {log.technician}
+                                    <Wrench size={14} className="text-slate-400" /> {log.technician}
                                 </div>
                                 <div className="col-span-1 text-right text-sm text-slate-400">
                                     {formatDate(log.date)}
