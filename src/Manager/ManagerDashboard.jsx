@@ -12,11 +12,19 @@ const ManagerDashboard = () => {
         const fetchDashboard = async () => {
             setLoading(true);
             try {
-                const res = await axios.get(`/api/manager/financial-report?year=${selectedYear}`);
-                setFinancialData(res.data);
+                const res = await axios.get(`http://localhost:3000/api/manager/financial-report?year=${selectedYear}`); 
+                console.log("Financial Data from API:", res.data); // ดูที่ Console ของ Browser
+                setFinancialData(res.data);                // เช็คก่อนว่าข้อมูลที่ได้มาเป็น Array จริงๆ ค่อย set state
+                if (Array.isArray(res.data)) {
+                    setFinancialData(res.data);
+                } else {
+                    console.warn("API did not return an array:", res.data);
+                    setFinancialData([]); // เซ็ตเป็น Array ว่างกันแครช
+                }
                 setLoading(false);
             } catch (err) {
                 console.error(err);
+                setFinancialData([]); // ถ้า Error ให้เซ็ตเป็น Array ว่าง
                 setLoading(false);
             }
         };
@@ -24,21 +32,28 @@ const ManagerDashboard = () => {
     }, [selectedYear]);
 
     // คำนวณข้อมูลสำหรับกราฟจาก financialData
+    // คำนวณข้อมูลสำหรับกราฟ
     const chartData = useMemo(() => {
+        // ดักไว้ก่อน ถ้าไม่ใช่ Array ให้ส่งค่าว่างกลับไป
+        if (!Array.isArray(financialData)) return [];
+
         const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
         return months.map((m, index) => {
             const dataInMonth = financialData.filter(d => new Date(d.datework).getMonth() === index);
             return {
                 month: m,
-                income: dataInMonth.reduce((sum, curr) => sum + Number(curr.income), 0),
-                expense: dataInMonth.reduce((sum, curr) => sum + Number(curr.total_cost), 0)
+                income: dataInMonth.reduce((sum, curr) => sum + Number(curr.income || 0), 0),
+                expense: dataInMonth.reduce((sum, curr) => sum + Number(curr.total_cost || 0), 0)
             };
         });
     }, [financialData]);
 
     const totalStats = useMemo(() => {
-        const income = financialData.reduce((sum, curr) => sum + Number(curr.income), 0);
-        const expense = financialData.reduce((sum, curr) => sum + Number(curr.total_cost), 0);
+        // ดักไว้ก่อน ถ้าไม่ใช่ Array ให้คืนค่า 0
+        if (!Array.isArray(financialData)) return { income: 0, expense: 0, profit: 0 };
+
+        const income = financialData.reduce((sum, curr) => sum + Number(curr.income || 0), 0);
+        const expense = financialData.reduce((sum, curr) => sum + Number(curr.total_cost || 0), 0);
         return { income, expense, profit: income - expense };
     }, [financialData]);
 
