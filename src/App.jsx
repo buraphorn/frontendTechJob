@@ -11,7 +11,7 @@ import UserSheetV2 from "./User/UserSheetV2.jsx";
 
 import AdminDashboard from "./Admin/AdminDashboard.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
-import AdminRecord from "./Admin/AdminRecord.jsx";
+import AdminMaterial from "./Admin/AdminMaterial.jsx";
 import AdminSetting from "./Admin/AdminSetting.jsx";
 import AdminWork from "./Admin/AdminWork.jsx";
 import AdminAccount from "./Admin/AdminAccount.jsx";
@@ -94,11 +94,11 @@ export default function App() {
             getDashboardElement(AdminDashboard, 'admin', { tasks: tasks })
           } />
 
-          <Route path="work" element={<AdminWork />} />
+          <Route path="material" element={<AdminMaterial />} />
 
-          {/* AdminRecord มีการอัปเดต tasks อยู่แล้ว Code ส่วนนี้ถูกต้องแล้ว */}
-          <Route path="record" element={
-            <AdminRecord
+          {/* AdminWork มีการอัปเดต tasks อยู่แล้ว Code ส่วนนี้ถูกต้องแล้ว */}
+          <Route path="work" element={
+            <AdminWork
               works={tasks}
               setWorks={setTasks}
               tasks={tasks}
