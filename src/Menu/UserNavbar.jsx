@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import axios from 'axios' // เพิ่ม import axios
 
 const UserNavbar = ({ onLogout }) => {
     const location = useLocation()
@@ -10,14 +11,16 @@ const UserNavbar = ({ onLogout }) => {
     useEffect(() => {
         setActiveMenu(location.pathname)
 
-        // ดึงข้อมูล User จาก session ที่ App.jsx เก็บไว้ตอน Login
-        const storedSession = JSON.parse(localStorage.getItem('session'));
-        const userData = storedSession?.user;
+        const fetchNavbarData = async () => {
+            // ดึงข้อมูล User จาก session ที่ App.jsx เก็บไว้ตอน Login
+            const storedSession = JSON.parse(localStorage.getItem('session'));
+            const userData = storedSession?.user;
+            const userId = userData?.id || userData?.userId; // ดึง ID จาก session
 
             if (userId) {
                 try {
-                    const response = await axios.get(`http://192.168.1.93:3000/users/${userId}`);
-                    
+                    const response = await axios.get(`http://192.168.1.106:3000/users/${userId}`);
+
                     if (response.data && response.data.user) {
                         setUserProfile(response.data.user); // เก็บข้อมูลที่ได้ลง State
                     }
@@ -31,12 +34,11 @@ const UserNavbar = ({ onLogout }) => {
     }, [location.pathname])
 
     const handleLogout = () => {
-        localStorage.removeItem('session'); // ✅ ลบให้ตรงกับ key ที่ App.jsx ใช้
+        localStorage.removeItem('session');
         if (onLogout) onLogout();
         navigate('/login');
     }
 
-    // ... ส่วน return คงเดิมทุกอย่าง เปลี่ยนแค่ userProfile.typework → userProfile.role
     return (
         <div className="fixed-top h-100 shadow-lg border-end bg-white" style={{ width: '240px', zIndex: 1030 }}>
             <div className="d-flex flex-column h-100">
@@ -60,7 +62,7 @@ const UserNavbar = ({ onLogout }) => {
                         {userProfile ? userProfile.name : 'กำลังโหลด...'}
                     </h6>
                     <p className="small text-muted mb-3">
-                        {userProfile ? userProfile.role : 'ตำแหน่งทั่วไป'} {/* ✅ เปลี่ยนจาก typework → role */}
+                        {userProfile ? userProfile.role : 'ตำแหน่งทั่วไป'}
                     </p>
 
                     <button onClick={handleLogout} className="btn btn-outline-danger btn-sm rounded-pill w-100 d-flex align-items-center justify-content-center gap-2">
@@ -94,9 +96,8 @@ const UserNavbar = ({ onLogout }) => {
 
 const MenuButton = ({ to, active, icon, label }) => (
     <Link to={to} className="text-decoration-none">
-        <button className={`btn w-100 text-start d-flex align-items-center gap-3 py-2 px-3 rounded-3 transition-all ${
-            active ? 'btn-primary shadow-sm text-white' : 'btn-light text-secondary hover-bg-primary-subtle'
-        }`}>
+        <button className={`btn w-100 text-start d-flex align-items-center gap-3 py-2 px-3 rounded-3 transition-all ${active ? 'btn-primary shadow-sm text-white' : 'btn-light text-secondary'
+            }`}>
             <i className={`bi ${icon} ${active ? 'text-white' : 'text-primary'}`}></i>
             <span className="fw-medium">{label}</span>
         </button>
