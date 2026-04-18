@@ -5,9 +5,7 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, Form } from "react-bootstrap";
-import { getTechnicians } from "../data/dataCore";
 
-// --- Styles เดิม ไม่มีการแก้ไข ---
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
   
@@ -84,7 +82,7 @@ const styles = `
 const LeaderDashboard = ({ tasks, setTasks }) => {
     const [technicians, setTechnicians] = useState([]);
     const [selectedWork, setSelectedWork] = useState(null);
-    const [assignTech, setAssignTech] = useState("");
+    const [assignTechs, setAssignTechs] = useState([]); // เปลี่ยนมาเก็บเป็น Array เพื่อเลือกได้หลายคน
     const [showModal, setShowModal] = useState(false);
     const [selectedTech, setSelectedTech] = useState(null);
 
@@ -93,30 +91,37 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
     const goReport = () => navigate("/leader-report");
 
     useEffect(() => {
-        const techs = getTechnicians();
-        setTechnicians(techs);
+        fetch("http://localhost:3000/technicians")  // หรือ port ที่ใช้จริง
+            .then(res => res.json())
+            .then(data => setTechnicians(data.technicians))
+            .catch(err => console.error("Error fetching technicians:", err));
     }, []);
 
     const handleClose = () => setShowModal(false);
+
+    // ฟังก์ชันสำหรับจัดการการเลือกช่าง (Toggle Checkbox)
+    const handleTechToggle = (techName) => {
+        setAssignTechs(prev =>
+            prev.includes(techName)
+                ? prev.filter(name => name !== techName) // เอาออกถ้ามีอยู่แล้ว
+                : [...prev, techName] // เพิ่มเข้าไปถ้ายังไม่มี
+        );
+    };
 
     // ==========================================
     // ส่วน Logic แผนที่ (Map Logic) ที่ปรับปรุงแล้ว
     // ==========================================
     const currentMapLocation = useMemo(() => {
-        // 1. กรณีผู้ใช้งานคลิกเลือกงานในรายการ (selectedWork)
-        // ให้แผนที่พุ่งไปที่งานนั้นทันที เพื่อดูว่างานที่กำลังจะจ่าย อยู่ตรงไหน
         if (selectedWork && selectedWork.location && selectedWork.location.lat) {
             return {
                 lat: selectedWork.location.lat,
                 lng: selectedWork.location.lng,
-                name: selectedWork.namework, // ชื่อสถานที่/ชื่องาน
-                role: selectedWork.role,     // ที่อยู่/รายละเอียด
-                tech: selectedWork.technicianName || "กำลังเลือกช่าง..." // ถ้ายังไม่เลือกช่าง ให้ขึ้นข้อความนี้
+                name: selectedWork.namework,
+                role: selectedWork.role,
+                tech: selectedWork.technicianName || "กำลังเลือกช่าง..."
             };
         }
 
-        // 2. กรณีไม่ได้เลือกงาน หรือเปิดเข้ามาครั้งแรก
-        // ให้ระบบหา "งานที่กำลัง Active" (ช่างกำลังทำ หรือ รอตรวจ) เพื่อมอนิเตอร์
         const activeWork = tasks.find(w =>
             ['Assigned', 'PendingInspection'].includes(w.status) && w.location && w.location.lat
         );
@@ -131,7 +136,6 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
             };
         }
 
-        // 3. หางานล่าสุดที่มีพิกัด (กรณีไม่มีงาน Active เลย)
         const latestWork = tasks.find(w => w.location && w.location.lat);
         if (latestWork) {
             return {
@@ -143,7 +147,6 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
             };
         }
 
-        // 4. Default Fallback: กรณีไม่มีข้อมูลใดๆ เลย ให้ปักหมุดที่สำนักงานกลาง (ตัวอย่าง: อนุสาวรีย์ชัยฯ)
         return {
             lat: 13.7563,
             lng: 100.5018,
@@ -151,9 +154,8 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
             role: "Bangkok HQ",
             tech: "-"
         };
-    }, [tasks, selectedWork]); // dependency: คำนวณใหม่เมื่อ tasks เปลี่ยน หรือ selectedWork เปลี่ยน
+    }, [tasks, selectedWork]);
 
-    // ข้อมูลกราฟ (เหมือนเดิม)
     const employeeStats = technicians.map((t) => ({
         name: t.nickname ?? t.name,
         completed: t.status === "ว่าง" ? 1 : 0,
@@ -161,7 +163,6 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
         overdue: t.status === "ลา" ? 1 : 0,
     }));
 
-    // Helper สี Badge (เหมือนเดิม)
     const getStatusBadge = (status) => {
         switch (status) {
             case 'Completed': return 'bg-success text-white';
@@ -284,7 +285,10 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
                                         <li key={task.id}
                                             className={`list-group-item border-0 rounded-3 mb-2 px-3 py-3 shadow-sm work-item ${selectedWork?.id === task.id ? 'active' : ''}`}
                                             style={{ cursor: "pointer", backgroundColor: "#fff" }}
-                                            onClick={() => setSelectedWork(task)}>
+                                            onClick={() => {
+                                                setSelectedWork(task);
+                                                setAssignTechs([]); // เคลียร์รายชื่อช่างเมื่อเปลี่ยนงาน
+                                            }}>
                                             <div className="d-flex justify-content-between align-items-center mb-2">
                                                 <div className="fw-bold text-dark">{task.namework}</div>
                                                 <span className={`badge rounded-pill ${getStatusBadge(task.status || 'Pending')}`}>
@@ -338,53 +342,83 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
                                     <hr className="my-4 text-muted opacity-25" />
 
                                     <div className="mb-3">
-                                        <label className="form-label fw-bold small text-uppercase text-muted">มอบหมายช่าง</label>
-                                        <Form.Select className="form-select shadow-none border-secondary-subtle"
-                                            value={assignTech} onChange={(e) => setAssignTech(e.target.value)}>
-                                            <option value="">-- เลือกช่างผู้ปฏิบัติงาน --</option>
-                                            {technicians.filter(emp => emp.role === "Technician").map(emp => (
-                                                <option key={emp.id} value={emp.name} disabled={emp.status === "ลา"} style={{ color: emp.status === "ลา" ? "red" : "black" }}>
-                                                    {emp.name} ({emp.nickname}) - {emp.typework} {emp.status === "ลา" ? '(ลา)' : ''}
-                                                </option>
+                                        <label className="form-label fw-bold small text-uppercase text-muted">มอบหมายช่าง (เลือกได้หลายคน)</label>
+
+                                        <div className="border rounded-3 p-2 bg-white shadow-sm" style={{ maxHeight: '180px', overflowY: 'auto', borderColor: '#dee2e6' }}>
+                                            {technicians.map(emp => (
+                                                <div key={emp.id || emp.technician_id} className="form-check mb-2">
+                                                    <input
+                                                        className="form-check-input shadow-none"
+                                                        type="checkbox"
+                                                        id={`tech-${emp.id || emp.technician_id}`}
+                                                        value={emp.name}
+                                                        checked={assignTechs.includes(emp.name)}
+                                                        onChange={() => handleTechToggle(emp.name)}
+                                                        disabled={emp.status === "ลา"}
+                                                        style={{ cursor: emp.status === "ลา" ? "not-allowed" : "pointer", borderColor: '#adb5bd' }}
+                                                    />
+                                                    <label
+                                                        className="form-check-label w-100"
+                                                        htmlFor={`tech-${emp.id || emp.technician_id}`}
+                                                        style={{
+                                                            color: emp.status === "ลา" ? "#dc3545" : "#212529",
+                                                            cursor: emp.status === "ลา" ? "not-allowed" : "pointer"
+                                                        }}
+                                                    >
+                                                        {emp.name} {emp.nickname ? `(${emp.nickname})` : ''}
+                                                        <span className="text-muted ms-1" style={{ fontSize: '0.85em' }}>
+                                                            - {emp.typework || emp.type} {emp.status === "ลา" ? '(ลา)' : ''}
+                                                        </span>
+                                                    </label>
+                                                </div>
                                             ))}
-                                        </Form.Select>
+                                            {technicians.length === 0 && <div className="text-muted small p-2">ไม่มีข้อมูลช่าง</div>}
+                                        </div>
                                     </div>
 
-                                    {assignTech && (() => {
-                                        const tech = technicians.find(e => e.name === assignTech);
-                                        return tech ? (
-                                            <div className="alert alert-primary border-0 bg-primary bg-opacity-10 py-2 px-3 mb-3 small rounded-3">
-                                                <div className="d-flex align-items-center">
-                                                    <i className="bi bi-info-circle-fill me-2 text-primary"></i>
-                                                    <span className="fw-bold text-primary">ข้อมูลช่าง</span>
-                                                </div>
-                                                <div className="mt-1 ps-4 text-dark">
-                                                    <div>ความถนัด: {tech.bio}</div>
-                                                    <div>ประสบการณ์: {tech.workDuration}</div>
-                                                </div>
+                                    {/* แสดงข้อมูลสรุปช่างที่ถูกเลือกทั้งหมด */}
+                                    {assignTechs.length > 0 && (
+                                        <div className="alert alert-primary border-0 bg-primary bg-opacity-10 py-2 px-3 mb-3 small rounded-3">
+                                            <div className="d-flex align-items-center mb-2">
+                                                <i className="bi bi-people-fill me-2 text-primary"></i>
+                                                <span className="fw-bold text-primary">ทีมช่างที่เลือก ({assignTechs.length} คน)</span>
                                             </div>
-                                        ) : null;
-                                    })()}
+                                            <div className="mt-1 ps-4 text-dark">
+                                                {assignTechs.map(name => {
+                                                    const tech = technicians.find(e => e.name === name);
+                                                    return (
+                                                        <div key={name} className="mb-1">
+                                                            • {name} <span className="text-muted">({tech?.typework || tech?.type || 'ไม่ระบุ'})</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <Button disabled={!assignTech} onClick={() => {
-                                    const updatedTasks = tasks.map(t => {
-                                        if (t.id === selectedWork.id) {
-                                            return {
-                                                ...t,
-                                                technicianName: assignTech,
-                                                status: "Assigned",
-                                                datework: t.datework || new Date().toISOString()
-                                            };
-                                        }
-                                        return t;
-                                    });
-                                    setTasks(updatedTasks);
-                                    alert(`มอบหมายงาน ${selectedWork.namework} ให้คุณ ${assignTech} เรียบร้อยแล้ว`);
-                                    setAssignTech("");
-                                    setSelectedWork(null);
-                                }}
-                                    className="w-100 rounded-3 py-2 btn-gradient fw-bold mt-auto">
+                                <Button
+                                    disabled={assignTechs.length === 0}
+                                    onClick={() => {
+                                        const updatedTasks = tasks.map(t => {
+                                            if (t.id === selectedWork.id) {
+                                                return {
+                                                    ...t,
+                                                    technicianName: assignTechs.join(", "), // เชื่อมชื่อช่างทุกคนด้วยลูกน้ำ
+                                                    assignedTechsArray: assignTechs, // เก็บค่าเป็น Array ไว้ใช้งาน
+                                                    status: "Assigned",
+                                                    datework: t.datework || new Date().toISOString()
+                                                };
+                                            }
+                                            return t;
+                                        });
+                                        setTasks(updatedTasks);
+                                        alert(`มอบหมายงาน ${selectedWork.namework} ให้ทีมช่าง ${assignTechs.length} คน เรียบร้อยแล้ว`);
+                                        setAssignTechs([]);
+                                        setSelectedWork(null);
+                                    }}
+                                    className="w-100 rounded-3 py-2 btn-gradient fw-bold mt-auto"
+                                >
                                     <i className="bi bi-send-check-fill me-2"></i>ยืนยันส่งงาน
                                 </Button>
                             </div>
@@ -396,6 +430,7 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
                         )}
                     </div>
                 </div>
+
                 {/* ส่วนแสดงแผนที่ */}
                 <div className="col-12">
                     <div className="glass-card p-4 mb-5">
@@ -415,8 +450,6 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
                         </div>
 
                         <div className="rounded-4 overflow-hidden shadow-sm border bg-light">
-                            {/* ใช้ Google Maps Embed API แบบมาตรฐานเพื่อให้แสดงผลได้จริง 
-                                โดยดึงค่า Lat, Lng จาก logic มาใส่ใน URL */}
                             <iframe
                                 title="Location Map"
                                 width="100%"
@@ -431,53 +464,6 @@ const LeaderDashboard = ({ tasks, setTasks }) => {
                 </div>
             </div>
 
-            {/* STATS & MAP SECTION */}
-            <div className="row g-4">
-                <div className="col-12">
-                    <div className="glass-card p-4 mb-4">
-                        <h5 className="fw-bold mb-4" style={{ color: "#4a4eb7" }}>
-                            <i className="bi bi-bar-chart-fill me-2"></i>ประสิทธิภาพการทำงานของทีมช่าง
-                        </h5>
-                        <ResponsiveContainer width="100%" height={350}>
-                            <BarChart data={employeeStats} barSize={40}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e0e0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6c757d', fontSize: 14 }} dy={10} />
-                                <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#6c757d' }} />
-                                <Tooltip
-                                    cursor={{ fill: '#f8f9fa' }}
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                />
-                                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                                <Bar dataKey="completed" fill="#4CAF50" name="เสร็จแล้ว" radius={[10, 10, 0, 0]} />
-                                <Bar dataKey="inProgress" fill="#4a6ff0" name="กำลังทำ" radius={[10, 10, 0, 0]} />
-                                <Bar dataKey="overdue" fill="#E63946" name="ค้าง/ลา" radius={[10, 10, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
-
-            {/* MODAL */}
-            <Modal show={showModal} onHide={handleClose} centered>
-                <Modal.Header closeButton className="border-0 pb-0">
-                    <Modal.Title className="fw-bold text-primary">รายละเอียดช่าง</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="pt-2">
-                    {selectedTech && (
-                        <div className="text-center py-3">
-                            <div className="bg-light rounded-circle d-inline-flex p-3 mb-3">
-                                <i className="bi bi-person-badge fs-1 text-primary"></i>
-                            </div>
-                            <h4 className="fw-bold">{selectedTech.name}</h4>
-                            <p className="text-muted">{selectedTech.job}</p>
-                            <span className="badge bg-success fs-6">{selectedTech.status}</span>
-                        </div>
-                    )}
-                </Modal.Body>
-                <Modal.Footer className="border-0 justify-content-center">
-                    <Button variant="light" onClick={handleClose} className="px-4 rounded-pill">ปิดหน้าต่าง</Button>
-                </Modal.Footer>
-            </Modal>
         </div>
     );
 };
