@@ -15,13 +15,5 @@ export default defineConfig({
   preview: {
     historyApiFallback: true,
   },
-  proxy: {
-    // เมื่อไหร่ที่มีการเรียก /api จะถูกโยนไปที่ Backend
-    '/api': {
-      target: 'http://localhost:3000', // <- เปลี่ยนเลข 3000 เป็น Port ที่ Backend ของคุณรันอยู่
-      changeOrigin: true,
-      secure: false,
-    }
-  },
   base: '/'
 })

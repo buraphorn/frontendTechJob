@@ -13,6 +13,7 @@ import AdminDashboard from "./Admin/AdminDashboard.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminMaterial from "./Admin/AdminMaterial.jsx";
 import AdminSetting from "./Admin/AdminSetting.jsx";
+import AdminMaterial from "./Admin/AdminMaterial.jsx";
 import AdminAccount from "./Admin/AdminAccount.jsx";
 import AdminWork from "./Admin/AdminWork.jsx";
 
@@ -21,7 +22,6 @@ import ManagerDashboard from "./Manager/ManagerDashboard.jsx";
 import ManagerLayout from "./layouts/ManagerLayout.jsx";
 import ManagerRecord from "./Manager/ManagerRecord.jsx";
 import ManagerAccount from "./Manager/ManagerAccount.jsx";
-import ManagerInventory from './Manager/ManagerInventory'
 import ManagerSetting from "./Manager/ManagerSetting.jsx";
 
 import LeaderDashboard from "./Leader/LeaderDashboard.jsx";
@@ -161,7 +161,6 @@ export default function App() {
           <Route path="manager-record" element={<ManagerRecord tasks={tasks} />} />
           <Route path="manager-account" element={<ManagerAccount tasks={tasks} />} />
           <Route path="manager-setting" element={<ManagerSetting />} />
-          <Route path="/manager/inventory" element={<ManagerInventory />} />
         </Route>
 
         <Route element={<LeaderLayout onLogout={handleLogout} />}>

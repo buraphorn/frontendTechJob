@@ -1,123 +1,115 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { getEmployeeById, authUsers } from '../data/dataCore' // 1. นำเข้าข้อมูล
+import axios from 'axios' // นำเข้า axios เพื่อดึงข้อมูลจาก API
 
 const UserNavbar = ({ onLogout }) => {
     const location = useLocation()
     const navigate = useNavigate()
     const [activeMenu, setActiveMenu] = useState(location.pathname)
-    const [userProfile, setUserProfile] = useState(null) // 2. สร้าง State เก็บข้อมูลผู้ใช้
+    const [userProfile, setUserProfile] = useState(null)
 
     useEffect(() => {
         setActiveMenu(location.pathname)
 
-        // --- ส่วนจำลองการ Login ---
-        // ในการใช้งานจริง ID นี้ควรมาจาก localStorage หรือ Context หลังจากการ Login
-        // ตัวอย่าง: const currentUserId = parseInt(localStorage.getItem('userId'));
-        const currentUserId = authUsers['user'].id; // ใช้ ID 11 (สมชาย ช่างไฟ) ตาม authUsers.user
+        const fetchNavbarData = async () => {
+            // 1. ดึงข้อมูล User จาก localStorage
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const userId = storedUser?.user_id || storedUser?.id;
 
-        // 3. ดึงข้อมูลพนักงานจาก dataCore
-        const foundUser = getEmployeeById(currentUserId);
-        if (foundUser) {
-            setUserProfile(foundUser);
-        }
+            if (userId) {
+                try {
+                    const response = await axios.get(`http://localhost:3000/users/${userId}`);
+                    
+                    if (response.data && response.data.user) {
+                        setUserProfile(response.data.user); // เก็บข้อมูลที่ได้ลง State
+                    }
+                } catch (error) {
+                    console.error("Navbar fetch error:", error);
+                }
+            }
+        };
 
+        fetchNavbarData();
     }, [location.pathname])
 
     const handleLogout = () => {
-        // ถ้ามี onLogout function ส่งมาจาก parent component (App.jsx)
-        if (onLogout) {
-            onLogout() // เรียกใช้ฟังก์ชัน logout จาก App.jsx
-        }
-
-        // นำทางไปหน้า login (ใช้ navigate แทน Link เพราะเราต้องทำงานก่อน redirect)
-        navigate('/login')
+        localStorage.removeItem('user'); // ล้างข้อมูลออกจากเครื่อง
+        if (onLogout) onLogout();
+        navigate('/login');
     }
 
-
     return (
-        <div>
-            <div className="p-4 bg-primary text-white fixed" style={{ width: '14rem', height: '100vh' }}>
-                {/* Login Box */}
-                <div className='bg-gradient p-1 rounded-3 shadow-lg mb-3 ' style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-
-                    <div className='d-flex align-items-center '>
-
-                        <div className='position-relative'>
-                            <div className='bg-white rounded-circle d-flex align-items-center justify-content-center' style={{ width: '50px', height: '50px' }}>
-                                <Link to="profile">
-                                    {/* ตรวจสอบว่ามีรูปภาพหรือไม่ ถ้าไม่มีใช้ icon เดิม */}
-                                    {userProfile && userProfile.avatar ? (
-                                        <img src={userProfile.avatar} alt="Profile" className="rounded-circle" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    ) : (
-                                        <i className="bi bi-person-fill text-primary" style={{ fontSize: '28px' }}></i>
-                                    )}
-                                </Link>
-                            </div>
-                            <span className='position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white' style={{ width: '14px', height: '14px' }}></span>
+        <div className="fixed-top h-100 shadow-lg border-end bg-white" style={{ width: '240px', zIndex: 1030 }}>
+            <div className="d-flex flex-column h-100">
+                
+                {/* --- Profile Section --- */}
+                <div className="p-4 mb-2 text-center border-bottom bg-light">
+                    <div className="position-relative d-inline-block mb-3">
+                        <div className="rounded-circle border border-3 border-primary p-1 shadow-sm" style={{ width: '90px', height: '90px' }}>
+                            <Link to="/profile">
+                                {userProfile?.avatar ? (
+                                    <img src={userProfile.avatar} alt="Profile" className="rounded-circle w-100 h-100" style={{ objectFit: 'cover' }} />
+                                ) : (
+                                    <div className="bg-primary-subtle rounded-circle w-100 h-100 d-flex align-items-center justify-content-center">
+                                        <i className="bi bi-person-fill text-primary fs-1"></i>
+                                    </div>
+                                )}
+                            </Link>
                         </div>
-                        <div className='ms-3 flex-grow-1'>
-                            {/* 4. แสดงข้อมูลแบบ Dynamic */}
-                            <small className='mb-0 text-white d-block'>
-                                {userProfile ? userProfile.name : 'กำลังโหลด...'}
-                            </small>
-                            <small className='text-white-50 d-block'>
-                                {userProfile ? userProfile.typework : '-'}
-                            </small>
-                        </div>
-                        <button className='text-light bg-transparent border-0' onClick={handleLogout}><i className="bi bi-box-arrow-right"></i></button>
+                        <span className="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" style={{ width: '18px', height: '18px' }}></span>
                     </div>
+                    
+                    {/* แสดงชื่อตามที่ Login จริง */}
+                    <h6 className="mb-0 fw-bold text-dark text-truncate px-2">
+                        {userProfile ? userProfile.name : 'กำลังโหลด...'}
+                    </h6>
+                    <p className="small text-muted mb-3">
+                        {userProfile ? userProfile.typework : 'ตำแหน่งทั่วไป'}
+                    </p>
 
+                    <button onClick={handleLogout} className="btn btn-outline-danger btn-sm rounded-pill w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i className="bi bi-box-arrow-right"></i>
+                        <span>ออกจากระบบ</span>
+                    </button>
                 </div>
 
-                <p className='p-2 mt-3 small'>เมนูหลัก</p>
+                {/* --- Menu Section --- */}
+                <div className="flex-grow-1 overflow-auto px-3 py-2">
+                    <p className="text-uppercase x-small fw-bold text-muted mb-3 ps-2" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>เมนูหลัก</p>
+                    
+                    <div className="d-flex flex-column gap-1">
+                        <MenuButton to="/user" active={activeMenu === '/user'} icon="bi-grid-1x2-fill" label="แดชบอร์ด" />
+                        <MenuButton to="/calendar" active={activeMenu === '/calendar'} icon="bi-calendar-event" label="ปฏิทินงาน" />
+                        <MenuButton to="/worksheet" active={activeMenu === '/worksheet'} icon="bi-file-earmark-text" label="ใบงานของฉัน" />
+                    </div>
+                </div>
 
-                {/* Menu Buttons */}
-                <div className='d-flex flex-column gap-2'>
-                    <Link to="/user" style={{ textDecoration: 'none' }}>
-                        <button
-                            className={`btn w-100 d-flex align-items-center ${activeMenu === '/user' ? 'btn-primary text-light' : 'btn-light text-dark'}`}
-                            onClick={() => setActiveMenu('/user')}
-                        >
-                            <i className="bi bi-house-door-fill"></i>
-                            <span className='ms-2'>หน้าแรก</span>
-                        </button>
-                    </Link>
-
-                    <Link to="/calendar" style={{ textDecoration: 'none' }}>
-                        <button
-                            className={`btn w-100 d-flex align-items-center ${activeMenu === '/calendar' ? 'btn-primary text-light' : 'btn-light text-dark'}`}
-                            onClick={() => setActiveMenu('/calendar')}
-                        >
-                            <i className="bi bi-calendar-check"></i>
-                            <span className='ms-2'>ปฎิทินงาน</span>
-                        </button>
-                    </Link>
-
-                    <Link to="/worksheet" style={{ textDecoration: 'none' }}>
-                        <button
-                            className={`btn w-100 d-flex align-items-center ${activeMenu === '/work-worksheet' ? 'btn-primary text-light' : 'btn-light text-dark'}`}
-                            onClick={() => setActiveMenu('/worksheet')}
-                        >
-                            <i className="bi bi-card-list"></i>
-                            <span className='ms-2'>ใบงาน</span>
-                        </button>
-                    </Link>
+                {/* --- Footer Branding --- */}
+                <div className="p-3 text-center border-top">
+                    <div className="small fw-bold text-primary">TECH <span className="text-dark">JOB</span></div>
                 </div>
             </div>
 
-            {/* Notification Button */}
-            <Link to="/notification">
-                <button
-                    className='position-absolute top-3 end-6 btn btn-primary text-light rounded-4'
-                    style={{ fontSize: '1.5rem' }}
-                    onClick={() => setActiveMenu('/notification')}
-                >
-                    <i className="bi bi-bell-fill"></i>
+            {/* Notification Floating Button */}
+            <Link to="/notification" className="position-fixed" style={{ bottom: '30px', left: '230px', zIndex: 1040 }}>
+                <button className="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
+                    <i className="bi bi-bell-fill fs-5 text-white"></i>
                 </button>
             </Link>
         </div>
     )
 }
+
+// Sub-component สำหรับปุ่มเมนูเพื่อให้โค้ดสะอาดขึ้น
+const MenuButton = ({ to, active, icon, label }) => (
+    <Link to={to} className="text-decoration-none">
+        <button className={`btn w-100 text-start d-flex align-items-center gap-3 py-2 px-3 rounded-3 transition-all ${
+            active ? 'btn-primary shadow-sm text-white' : 'btn-light text-secondary hover-bg-primary-subtle'
+        }`}>
+            <i className={`bi ${icon} ${active ? 'text-white' : 'text-primary'}`}></i>
+            <span className="fw-medium">{label}</span>
+        </button>
+    </Link>
+)
 
 export default UserNavbar

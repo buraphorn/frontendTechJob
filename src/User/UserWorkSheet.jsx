@@ -40,7 +40,7 @@ const UserWorkSheet = ({ tasks = [] }) => {
     return (
         <div className="container-fluid py-5" style={{ minHeight: '100vh', background: '#F0F8FF', marginLeft: '14rem' }}>
             <div className='container p-4 p-md-5 rounded-4'>
-                <h1 className='fw-bold mb-4 text-primary'><i className="bi bi-card-list me-3"></i>ประวัติใบงานของฉัน</h1>
+                <h1 className='fw-bold mb-4 text-primary'> <i className="bi bi-file-earmark-text me-3"></i>ประวัติใบงานของฉัน</h1>
                 <div className="d-flex mb-4">
                     <input className="form-control" type="text" placeholder="ค้นหา..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>

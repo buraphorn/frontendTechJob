@@ -10,6 +10,7 @@ const ManagerAccount = () => {
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // เริ่มทำงานเมื่อเปิดหน้าเว็บ: ดึงข้อมูลพนักงาน
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -177,6 +178,24 @@ const ManagerAccount = () => {
                     </div>
                 </div>
             )}
+        </div>
+    );
+};
+
+// Component ย่อย: การ์ดแสดงข้อมูลเล็กๆ
+const InfoCard = ({ icon, color, label, value }) => {
+    const bgClass = `bg-${color} bg-opacity-10 text-${color}`;
+    return (
+        <div className="col-12 col-md-4">
+            <div className="border rounded-4 p-3 d-flex align-items-center gap-3 shadow-sm h-100">
+                <div className={`p-2 rounded-3 ${bgClass}`}>
+                    {icon}
+                </div>
+                <div>
+                    <div className="small text-secondary">{label}</div>
+                    <div className="fw-bold text-dark">{value}</div>
+                </div>
+            </div>
         </div>
     );
 };

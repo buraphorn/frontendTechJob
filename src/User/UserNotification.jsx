@@ -52,7 +52,7 @@ const UserNotification = () => {
     }
 
     return (
-        <div className="container mt-4" style={{ marginLeft: '14rem' }}>
+        <div className="container mt-4" style={{ marginLeft: '15rem' }}>
             <button className='btn btn-primary' onClick={goBack} >
                 <i className="bi bi-arrow-left-short"></i> &nbsp;
                 ย้อนกลับ
