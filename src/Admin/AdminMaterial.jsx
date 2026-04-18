@@ -35,7 +35,7 @@ const AdminMaterial = () => {
     // ==========================================
     const fetchMaterials = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/materials');
+            const response = await axios.get('http://localhost:3000/api/materials');
             setMaterials(response.data);
         } catch (error) {
             console.error("ดึงข้อมูลไม่มา เพราะ:", error);
@@ -44,19 +44,8 @@ const AdminMaterial = () => {
         }
     };
 
-    const fetchRequests = async () => {
-        try {
-            const response = await axios.get('http://localhost:3000/requests');
-            // จัดการข้อมูลที่ได้จาก API
-        } catch (error) {
-            console.error("ดึงข้อมูลรายการเบิกไม่มา เพราะ:", error);
-        }
-    };
-
-
     useEffect(() => {
         fetchMaterials();
-        fetchRequests();
     }, []);
 
     // ==========================================
@@ -67,10 +56,10 @@ const AdminMaterial = () => {
         try {
             if (isEditing) {
                 // อัปเดตข้อมูล (แก้ไข)
-                await axios.put(`http://localhost:3000/materials/${formData.material_id}`, formData);
+                await axios.put(`http://localhost:3000/api/materials/${formData.material_id}`, formData);
             } else {
                 // สร้างข้อมูลใหม่ (เพิ่ม)
-                await axios.post('http://localhost:3000/materials/add', formData);
+                await axios.post('http://localhost:3000/api/materials', formData);
             }
             fetchMaterials(); // โหลดข้อมูลตารางใหม่
             handleClose();    // ปิดหน้าต่าง Modal
@@ -98,7 +87,7 @@ const AdminMaterial = () => {
     const handleDelete = async (id) => {
         if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบวัสดุนี้?")) {
             try {
-                await axios.delete(`http://localhost:3000/materials/${id}`);
+                await axios.delete(`http://localhost:3000/api/materials/${id}`);
                 fetchMaterials(); // โหลดข้อมูลตารางใหม่หลังลบเสร็จ
             } catch (error) {
                 console.error("ลบข้อมูลไม่สำเร็จ:", error);

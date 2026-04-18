@@ -1,7 +1,7 @@
 import { Form, Button, Dropdown, Badge, Modal, Table, Row, Col, InputGroup } from 'react-bootstrap';
 import { useState, useEffect, useRef, useMemo } from 'react';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'http://localhost:3000/api';
 
 const AdminAccount = () => {
   const [users, setUsers] = useState([]);
@@ -21,12 +21,14 @@ const AdminAccount = () => {
   // --- Refs ---
   const nameRef = useRef();
   const nicknameRef = useRef();
-  const birthdayRef = useRef();
   const phoneRef = useRef();
   const emailRef = useRef();
   const typeWorkRef = useRef();
   const expertiseRef = useRef();
   const incomeRef = useRef();
+
+  const roleRef = useRef();
+  const [selectedRole, setSelectedRole] = useState('technician');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -94,6 +96,7 @@ const AdminAccount = () => {
     setEditMode(false);
     setEditingUser(null);
     setImagePreview(null);
+    setSelectedRole('technician');
   };
   const handleShow = () => setShow(true);
 
@@ -102,7 +105,6 @@ const AdminAccount = () => {
       setTimeout(() => {
         if (nameRef.current) nameRef.current.value = editingUser.name || '';
         if (nicknameRef.current) nicknameRef.current.value = editingUser.nickname || '';
-        if (birthdayRef.current) birthdayRef.current.value = editingUser.birthday || '';
         if (phoneRef.current) phoneRef.current.value = editingUser.phone || '';
         if (emailRef.current) emailRef.current.value = editingUser.email || '';
         if (typeWorkRef.current) typeWorkRef.current.value = editingUser.typework || '';
@@ -144,6 +146,7 @@ const AdminAccount = () => {
     if (user) {
       setEditingUser(user);
       setEditMode(true);
+      setSelectedRole(user.role || 'technician');
       setShow(true);
     }
   };
@@ -164,12 +167,12 @@ const AdminAccount = () => {
   const saveClicked = async () => {
     const name = nameRef.current.value.trim();
     const nickname = nicknameRef.current.value.trim();
-    const birthday = birthdayRef.current.value;
     const phone = phoneRef.current.value.trim();
     const email = emailRef.current.value.trim();
     const typework = typeWorkRef.current.value;
     const expertise = expertiseRef.current.value.trim();
     const income = parseFloat(incomeRef.current.value) || 0;
+    const role = selectedRole;
 
     if (!name) { alert('กรุณากรอกชื่อช่าง'); return; }
     if (income <= 0) { alert('กรุณากรอกรายได้ที่ถูกต้อง'); return; }
@@ -217,12 +220,13 @@ const AdminAccount = () => {
 
     } else {
       const newUser = {
-        id: users.reduce((prev, user) => (user.id > prev ? user.id : prev), 0) + 1,
+        user_id: users.reduce((prev, user) => (user.user_id > prev ? user.user_id : prev), 0) + 1,
         ...userData,
         status: 'ว่าง'
       };
       setUsers([newUser, ...users]);
     }
+
     handleClose();
   };
 
@@ -235,7 +239,6 @@ const AdminAccount = () => {
     }
   };
 
-  // Pagination
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
   const goToFirst = () => setCurPage(1);
   const goToLast = () => setCurPage(totalPages);
