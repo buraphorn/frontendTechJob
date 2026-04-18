@@ -13,7 +13,7 @@ import AdminDashboard from "./Admin/AdminDashboard.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminRecord from "./Admin/AdminRecord.jsx";
 import AdminSetting from "./Admin/AdminSetting.jsx";
-import AdminWork from "./Admin/AdminWork.jsx";
+import AdminMaterial from "./Admin/AdminMaterial.jsx";
 import AdminAccount from "./Admin/AdminAccount.jsx";
 
 import ManagerDashboard from "./Manager/ManagerDashboard.jsx";
@@ -98,7 +98,7 @@ export default function App() {
             getDashboardElement(AdminDashboard, 'admin', { tasks: tasks })
           } />
 
-          <Route path="work" element={<AdminWork />} />
+          <Route path="material" element={<AdminMaterial />} />
 
           {/* AdminRecord มีการอัปเดต tasks อยู่แล้ว Code ส่วนนี้ถูกต้องแล้ว */}
           <Route path="record" element={

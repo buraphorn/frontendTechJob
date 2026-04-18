@@ -62,13 +62,13 @@ const AppNavbar = ({ onLogout }) => {
                     ระบบงาน
                 </button>
             </Link>
-            <Link to="/work">
+            <Link to="/material">
                 <button
-                    className={`btn mb-2 w-100 text-start ${activeMenu === '/work' ? 'btn-light' : 'text-light'}`}
-                    onClick={() => setActiveMenu('/work')}
+                    className={`btn mb-2 w-100 text-start ${activeMenu === '/material' ? 'btn-light' : 'text-light'}`}
+                    onClick={() => setActiveMenu('/material')}
                 >
                     <i className="bi bi-file-earmark-plus-fill mx-3"></i>
-                    เบิกวัสดุ
+                    จัดการวัสดุ
                 </button>
             </Link>
 

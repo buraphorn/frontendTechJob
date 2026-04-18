@@ -1,115 +1,180 @@
 import React, { useState, useEffect } from 'react';
-import { getEmployeeWithHistory, authUsers } from '../data/dataCore'; // 1. นำเข้าข้อมูล
+import axios from 'axios';
+import { Mail, Phone, MapPin, Briefcase, Calendar, ShieldCheck, Tag, Hash } from 'lucide-react';
 
-const ProfileBootstrap = () => {
+const UserProfile = () => {
   const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 2. จำลองการ Login ดึง ID มาจาก authUsers ('user' => id: 11)
-    const currentUserId = authUsers['user'].id;
+    const fetchUserData = async () => {
+      try {
+        // 1. หยิบข้อมูลจากกระเป๋า (localStorage)
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        
+        // 2. ใช้ user_id (ตามโครงสร้าง DB ของคุณ)
+        const userId = storedUser?.user_id;
 
-    // 3. ดึงข้อมูลพนักงานพร้อมประวัติงาน
-    const data = getEmployeeWithHistory(currentUserId);
-    if (data) {
-      setUserProfile(data);
-    }
+        if (!userId) {
+          console.error("หา userId ไม่เจอใน localStorage");
+          setError("กรุณาเข้าสู่ระบบ");
+          setLoading(false);
+          return;
+        }
+
+        // 3. เรียก API (ย้ำว่าไม่ต้องมี /api เพราะ server.js ใช้ /users)
+       // ... โค้ดก่อนหน้า ...
+const response = await axios.get(`http://localhost:3000/users/${userId}`);
+
+// ตรวจสอบว่ามีข้อมูลในชั้น response.data.user หรือไม่
+if (response.data && response.data.user) {
+    // ดึงเฉพาะก้อนที่มีชื่อ "มานะ" (response.data.user) ไปใส่ใน State
+    setUserProfile(response.data.user); 
+} else {
+    console.error("หาข้อมูล user ไม่เจอใน response:", response.data);
+}
+      } catch (error) {
+        console.error("Error:", error);
+        console.error("3. Error ตอนเรียก API:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserData();
   }, []);
 
-  if (!userProfile) {
-    return <div className="p-5 text-center">Loading Profile...</div>;
-  }
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('th-TH', {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  };
+
+  if (loading) return (
+    <div style={styles.loadingWrap}>
+      <span style={{ color: '#64748b', fontSize: 14 }}>กำลังโหลดข้อมูลโปรไฟล์...</span>
+    </div>
+  );
+
+  if (!userProfile) return (
+    <div style={styles.loadingWrap}>
+      <span style={{ color: '#94a3b8', fontSize: 14 }}>ไม่พบข้อมูล (กรุณาเข้าสู่ระบบใหม่อีกครั้ง)</span>
+    </div>
+  );
+
+  const statusColor = userProfile.status === 'ว่าง'
+    ? { bg: '#f0fdf4', color: '#166534', dot: '#22c55e' }
+    : { bg: '#fefce8', color: '#854d0e', dot: '#eab308' };
 
   return (
-    <div className="container my-5" style={{marginLeft: '14rem'}}>
-      <div className="card-body p-4 p-md-5">
-
-        {/* 🖼️ ส่วนหัวโปรไฟล์ */}
-        <header className="text-center mb-5 border-bottom pb-4">
-          <div className="mx-auto bg-light rounded-circle mb-3 d-flex align-items-center justify-content-center overflow-hidden"
-            style={{ width: '120px', height: '120px', border: '4px solid #0d6efd' }}>
-            {userProfile.avatar ? (
-              <img src={userProfile.avatar} alt={userProfile.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <i className="bi bi-person-fill text-secondary fs-1"></i>
-            )}
+    <div style={styles.page}>
+      {/* Hero Card */}
+      <div style={styles.heroCard}>
+        <div style={styles.heroBanner} />
+        <div style={styles.heroBody}>
+          <div style={styles.avatarRing}>
+            {/* ✨ แก้จุดที่ 2: ใช้ userProfile.avatar หรือแสดงตัวอักษรย่อถ้าไม่มีรูป */}
+            {userProfile.avatar && userProfile.avatar !== "" 
+              ? <img src={userProfile.avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={styles.avatarInitials}>{getInitials(userProfile.name || userProfile.username)}</span>
+            }
           </div>
 
-          <h1 className="display-6 fw-bold text-primary">{userProfile.name}</h1>
-          <h2 className="fs-5 text-secondary mb-3">{userProfile.role} - {userProfile.typework}</h2>
-          <p className="lead text-muted">{userProfile.bio || "ไม่มีข้อมูลสังเขป"}</p>
-        </header>
-
-        {/* 📞 ข้อมูลติดต่อ & ข้อมูลส่วนตัว */}
-        <div className="row g-4 mb-5">
-          {/* คอลัมน์ด้านซ้าย: ข้อมูลติดต่อ */}
-          <div className="col-lg-4">
-            <div className="p-3 bg-light rounded h-100">
-              <h3 className="fs-5 border-bottom pb-2 mb-3 text-dark fw-bold">ข้อมูลติดต่อ</h3>
-              <ul className="list-unstyled">
-                <li className="mb-2"><strong><i className="bi bi-telephone-fill me-2 text-primary"></i>โทร:</strong> {userProfile.phone}</li>
-                <li className="mb-2"><strong><i className="bi bi-envelope-fill me-2 text-primary"></i>รหัสพนักงาน:</strong> {userProfile.id}</li>
-                <li><strong><i className="bi bi-geo-alt-fill me-2 text-primary"></i>สถานะ:</strong> <span className={`badge ${userProfile.status === 'ว่าง' ? 'bg-success' : userProfile.status === 'ลา' ? 'bg-danger' : 'bg-warning'}`}>{userProfile.status}</span></li>
-              </ul>
+          <div style={styles.heroInfo}>
+            <h1 style={styles.heroName}>{userProfile.name || userProfile?.username|| "กำลังโหลดชื่อ..."}</h1>
+            <p style={styles.heroSub}>@{userProfile.username} · {userProfile.department || 'แผนกทั่วไป'}</p>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+              <span style={styles.badgeBlue}><ShieldCheck size={11} /> {userProfile.role}</span>
+              <span style={{ ...styles.badge, background: statusColor.bg, color: statusColor.color }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor.dot, display: 'inline-block', marginRight: 5 }} />
+                {userProfile.status || 'ว่าง'}
+              </span>
             </div>
           </div>
 
-          {/* คอลัมน์ด้านขวา: ข้อมูลการทำงาน */}
-          <div className="col-lg-8">
-            <div className="p-3 bg-light rounded h-100">
-              <h3 className="fs-5 border-bottom pb-2 mb-3 text-dark fw-bold">ข้อมูลการทำงาน</h3>
-              <div className="row">
-                <div className="col-md-6 mb-2">
-                  <strong>ประสบการณ์:</strong> {userProfile.workDuration}
-                </div>
-                <div className="col-md-6 mb-2">
-                  <strong>วันที่เริ่มงาน:</strong> {userProfile.startDate}
-                </div>
-                <div className="col-md-6 mb-2">
-                  <strong>งานที่ถนัด:</strong> {userProfile.job}
-                </div>
-                <div className="col-md-6 mb-2">
-                  <strong>โรคประจำตัว:</strong> {userProfile.disease}
-                </div>
+          <div style={styles.joinBadge}>
+            <Calendar size={12} style={{ marginRight: 4 }} />
+            เริ่มงานเมื่อ {formatDate(userProfile.created_at)}
+          </div>
+        </div>
+      </div>
+
+      <div style={styles.grid}>
+        <div style={styles.card}>
+          <p style={styles.cardTitle}>ข้อมูลส่วนตัว</p>
+          {[
+            { icon: <Mail size={15} />, label: 'อีเมล', value: userProfile.email },
+            { icon: <Phone size={15} />, label: 'เบอร์โทร', value: userProfile.phone || 'ไม่ได้ระบุ' },
+            { icon: <Tag size={15} />, label: 'ประเภทพนักงาน', value: userProfile.type || 'พนักงานประจำ' },
+            { icon: <Hash size={15} />, label: 'รหัสพนักงาน', value: `#USR-${String(userProfile.user_id).padStart(3, '0')}` },
+          ].map((row, i) => (
+            <div key={i} style={styles.infoRow}>
+              <div style={styles.iconDot}>{row.icon}</div>
+              <div>
+                <p style={styles.infoLabel}>{row.label}</p>
+                <p style={styles.infoValue}>{row.value}</p>
               </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={styles.card}>
+          <p style={styles.cardTitle}>รายละเอียดงานและสังกัด</p>
+          <div style={styles.statGrid}>
+            <div style={styles.statBox}>
+              <div style={styles.statLabelRow}><Briefcase size={14} color="#3b82f6" /> <span style={styles.statLabel}>สังกัดแผนก</span></div>
+              <p style={styles.statValue}>{userProfile.department || '-'}</p>
+            </div>
+            <div style={styles.statBox}>
+              <div style={styles.statLabelRow}><MapPin size={14} color="#3b82f6" /> <span style={styles.statLabel}>พื้นที่ปฏิบัติงาน</span></div>
+              <p style={styles.statValue}>{userProfile.type || 'สำนักงานใหญ่'}</p>
+            </div>
+            <div style={styles.statBox}>
+              <div style={styles.statLabelRow}><ShieldCheck size={14} color="#3b82f6" /> <span style={styles.statLabel}>ระดับสิทธิ์</span></div>
+              <p style={styles.statValue}>{userProfile.role}</p>
+            </div>
+            <div style={styles.statBox}>
+              <div style={styles.statLabelRow}><Calendar size={14} color="#3b82f6" /> <span style={styles.statLabel}>วันที่ลงทะเบียน</span></div>
+              <p style={styles.statValue}>{formatDate(userProfile.created_at)}</p>
             </div>
           </div>
         </div>
-
-        {/* 📋 ประวัติงานที่ผ่านมา (Job History) */}
-        {userProfile.jobHistory && userProfile.jobHistory.length > 0 && (
-          <div className="mb-5">
-            <h3 className="fs-4 border-bottom pb-2 mb-4 text-dark fw-bold">ประวัติงานล่าสุด</h3>
-            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead className="table-light">
-                  <tr>
-                    <th>ชื่องาน</th>
-                    <th>บทบาท</th>
-                    <th>สถานที่</th>
-                    <th>วันที่</th>
-                    <th>สถานะ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* ดึงข้อมูล jobHistory มาแสดงแทน Projects เดิม */}
-                  {userProfile.jobHistory.slice(0, 5).map((history) => (
-                    <tr key={history.id}>
-                      <td>{history.jobTitle}</td>
-                      <td>{history.role}</td>
-                      <td>{history.location}</td>
-                      <td>{history.date}</td>
-                      <td><span className="badge bg-success">{history.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
       </div>
     </div>
   );
 };
 
-export default ProfileBootstrap;
+const styles = {
+  page: { padding: '24px' ,width: '100%', minHeight: '100vh', overflowX: 'hidden', background: '#F0F8FF', marginLeft: '14rem' },
+  loadingWrap: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', marginLeft: '14rem' },
+  heroCard: { background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' },
+  heroBanner: { height: 100, background: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 60%, #06b6d4 100%)' },
+  heroBody: { padding: '0 24px 24px', display: 'flex', alignItems: 'flex-end', gap: 16, marginTop: -44 },
+  avatarRing: { width: 88, height: 88, borderRadius: '50%', border: '3px solid #fff', background: '#dbeafe', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  avatarInitials: { fontSize: 28, fontWeight: 600, color: '#1d4ed8' },
+  heroInfo: { paddingTop: 52, flex: 1 },
+  heroName: { fontSize: 22, fontWeight: 600, color: '#0f172a', margin: 0 },
+  heroSub: { fontSize: 13, color: '#64748b', margin: '3px 0 0' },
+  joinBadge: { fontSize: 11, color: '#854d0e', background: '#fefce8', padding: '4px 10px', borderRadius: 99, display: 'flex', alignItems: 'center', height: 'fit-content', marginBottom: 2 },
+  badge: { display: 'inline-flex', alignItems: 'center', fontSize: 11, fontWeight: 500, padding: '3px 10px', borderRadius: 99 },
+  badgeBlue: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, padding: '3px 10px', borderRadius: 99, background: '#eff6ff', color: '#1d4ed8' },
+  grid: { display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16 },
+  card: { background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
+  cardTitle: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 14 },
+  infoRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '0.5px solid #f1f5f9' },
+  iconDot: { width: 32, height: 32, borderRadius: 8, background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  infoLabel: { fontSize: 11, color: '#94a3b8', margin: 0 },
+  infoValue: { fontSize: 14, color: '#0f172a', margin: 0 },
+  statGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
+  statBox: { background: '#f8fafc', borderRadius: 10, padding: 14, border: '0.5px solid #f1f5f9' },
+  statLabelRow: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 },
+  statLabel: { fontSize: 11, color: '#94a3b8' },
+  statValue: { fontSize: 15, fontWeight: 500, color: '#0f172a', margin: 0 },
+};
+
+export default UserProfile;
