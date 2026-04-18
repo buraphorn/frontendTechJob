@@ -1,4 +1,3 @@
-
 import { Form, Button, Card, Row, Col, Nav, Tab, Table, Badge, Modal } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -106,9 +105,8 @@ const AdminMaterial = () => {
         <div className="p-4" style={{ width: '100%', minHeight: '100vh', marginLeft: '14rem' }}>
             <h3 className="mb-4"><i className="bi bi-box-seam me-2"></i> จัดการวัสดุอุปกรณ์</h3>
 
-            <Tab.Container>
+            <Tab.Container defaultActiveKey="stock">
                 <Row>
-
                     <Col md={3}>
                         <Card className="mb-3 border-0 shadow-sm">
                             <Card.Body className="p-0">
@@ -347,8 +345,7 @@ const AdminMaterial = () => {
                         <Button variant="primary" type="submit">บันทึกข้อมูล</Button>
                     </Modal.Footer>
                 </Form>
-            </Modal>  
-
+            </Modal>
         </div>
     );
 };

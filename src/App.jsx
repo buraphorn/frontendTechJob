@@ -15,6 +15,7 @@ import AdminMaterial from "./Admin/AdminMaterial.jsx";
 import AdminSetting from "./Admin/AdminSetting.jsx";
 import AdminMaterial from "./Admin/AdminMaterial.jsx";
 import AdminAccount from "./Admin/AdminAccount.jsx";
+import MaterialList from "./Admin/AdminMaterial.jsx";
 
 import ManagerDashboard from "./Manager/ManagerDashboard.jsx";
 import ManagerLayout from "./layouts/ManagerLayout.jsx";
@@ -112,6 +113,7 @@ export default function App() {
 
           <Route path="setting" element={<AdminSetting />} />
           <Route path="account" element={<AdminAccount />} />
+          <Route path="material" element={<MaterialList />} />
         </Route>
 
         {/* ... Manager Routes และ Leader Routes คงเดิม ... */}

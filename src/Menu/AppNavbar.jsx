@@ -21,6 +21,11 @@ const AppNavbar = ({ onLogout }) => {
         navigate('/login')
     }
 
+    // ฟังก์ชันช่วยเช็คคลาส Active เพื่อให้โค้ดสะอาดขึ้น
+    const getBtnClass = (path) => {
+        return `btn mb-2 w-100 text-start ${activeMenu === path ? 'btn-light text-primary fw-bold' : 'text-light'}`
+    }
+
 
     return (
         <div className="border-1 bg-primary" style={{ width: '14rem', position: 'fixed', height: '100vh' }}>
@@ -68,6 +73,15 @@ const AppNavbar = ({ onLogout }) => {
                     onClick={() => setActiveMenu('/material')}
                 >
                     <i className="bi bi-file-earmark-plus-fill mx-3"></i>
+                    จัดการวัสดุ
+                </button>
+            </Link> {/* เพิ่มเมนูจัดการวัสดุ */}
+            <Link to='/material' className="text-decoration-none">
+                <button
+                    className={`btn mb-2 w-100 text-start ${activeMenu === '/material' ? 'btn-light text-primary fw-bold' : 'text-light'}`}
+                    onClick={() => setActiveMenu('/material')}
+                >
+                    <i className="bi bi-box-seam-fill mx-3"></i>
                     จัดการวัสดุ
                 </button>
             </Link>
