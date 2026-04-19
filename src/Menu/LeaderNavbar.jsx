@@ -1,71 +1,157 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { LayoutDashboard, Users, Settings, LogOut } from 'lucide-react'
 
-const leaderNavbar = ({ onLogout }) => {
+const LeaderNavbar = ({ onLogout }) => {
     const location = useLocation()
-    const [activeMenu, setActiveMenu] = useState(location.pathname)
     const navigate = useNavigate()
+    const [activeMenu, setActiveMenu] = useState(location.pathname)
 
-    useEffect(() => {
-        setActiveMenu(location.pathname)
-    }, [location.pathname])
+    useEffect(() => { setActiveMenu(location.pathname) }, [location.pathname])
 
     const handleLogout = () => {
-        if (onLogout) {
-            onLogout()
-        }
+        localStorage.removeItem('user')
+        localStorage.removeItem('session')
+        if (onLogout) onLogout()
         navigate('/login')
     }
 
-    const getButtonClass = (path) => {
-        return `btn mb-2 w-100 ${activeMenu === path ? 'bg-white text-dark' : 'text-light'}`
-    }
+    const menus = [
+        { to: '/leader',      icon: <LayoutDashboard size={17} />, label: 'หน้าหลัก' },
+        { to: '/leader-list', icon: <Users            size={17} />, label: 'รายชื่อ' },
+    ]
 
     return (
-        <div className="border-1 bg-primary" style={{ width: '14rem', position: 'fixed', height: '100vh'}}>
-            <div className="d-flex align-items-center justify-content-between border-1 m-3 border-light px-2 py-2 btn btn-outline-danger" style={{ borderRadius: '30px' }}
-                onClick={handleLogout}>
-                <div>
-                    <span className='text-light ml-4'>Logout</span>
-                </div>
-                <div>
-                    <button>
-                        <i className="bi bi-box-arrow-right text-light"></i>
+        <>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+                .lnav-wrap {
+                    position: fixed; top: 0; left: 0;
+                    width: 15rem; height: 100vh; z-index: 1030;
+                    font-family: 'Kanit', sans-serif;
+                    display: flex; flex-direction: column;
+                    background: linear-gradient(180deg,#e0f0ff 0%,#f0f8ff 60%,#dbeefe 100%);
+                    border-right: 1px solid rgba(147,197,253,0.4);
+                    box-shadow: 4px 0 24px rgba(59,130,246,0.08);
+                }
+                .lnav-wrap::before {
+                    content: '';
+                    position: absolute; inset: 0;
+                    background-image: radial-gradient(circle,#93c5fd18 1px,transparent 1px);
+                    background-size: 24px 24px; pointer-events: none;
+                }
+
+                .lnav-header {
+                    padding: 28px 20px 20px;
+                    border-bottom: 1px solid rgba(147,197,253,0.35);
+                    display: flex; flex-direction: column; align-items: center; gap: 6px;
+                    position: relative;
+                }
+                .lnav-logo-wrap {
+                    width: 60px; height: 60px; border-radius: 16px;
+                    background: linear-gradient(135deg,#3b82f6,#1d4ed8);
+                    display: flex; align-items: center; justify-content: center;
+                    box-shadow: 0 6px 18px rgba(59,130,246,0.3);
+                    margin-bottom: 4px;
+                }
+                .lnav-title { font-size: 16px; font-weight: 700; color: #1e3a8a; }
+                .lnav-sub   { font-size: 11px; color: #64748b; }
+                .lnav-logout-btn {
+                    margin-top: 10px;
+                    display: flex; align-items: center; justify-content: center; gap: 6px;
+                    width: 100%; padding: 7px 0; border-radius: 10px;
+                    border: 1.5px solid rgba(239,68,68,0.4);
+                    background: rgba(254,242,242,0.7); color: #dc2626;
+                    font-family: 'Kanit', sans-serif; font-size: 13px; font-weight: 500;
+                    cursor: pointer; transition: all 0.2s;
+                }
+                .lnav-logout-btn:hover { background: #fee2e2; border-color: #ef4444; }
+
+                .lnav-menu { flex: 1; padding: 18px 14px 12px; display: flex; flex-direction: column; gap: 4px; }
+                .lnav-section-label {
+                    font-size: 10px; font-weight: 700; color: #94a3b8;
+                    letter-spacing: 1.2px; text-transform: uppercase;
+                    padding: 0 6px; margin-bottom: 6px;
+                }
+                .lnav-menu-btn {
+                    display: flex; align-items: center; gap: 10px;
+                    padding: 10px 14px; border-radius: 13px;
+                    border: none; width: 100%; text-align: left;
+                    font-family: 'Kanit', sans-serif; font-size: 14px; font-weight: 500;
+                    cursor: pointer; transition: all 0.18s; text-decoration: none;
+                    color: #475569; background: transparent;
+                }
+                .lnav-menu-btn:hover { background: rgba(255,255,255,0.65); color: #1e40af; transform: translateX(2px); }
+                .lnav-menu-btn.active {
+                    background: rgba(255,255,255,0.82); backdrop-filter: blur(10px);
+                    color: #1d4ed8; font-weight: 700;
+                    border: 1px solid rgba(147,197,253,0.5);
+                    box-shadow: 0 4px 14px rgba(59,130,246,0.1);
+                }
+                .lnav-menu-btn.active .lnav-icon { background: linear-gradient(135deg,#3b82f6,#1d4ed8); color: #fff; box-shadow: 0 3px 10px rgba(59,130,246,0.3); }
+                .lnav-icon {
+                    width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+                    display: flex; align-items: center; justify-content: center;
+                    background: rgba(219,234,254,0.6); color: #3b82f6; transition: all 0.18s;
+                }
+
+                .lnav-setting-btn {
+                    margin: 0 14px 14px;
+                    display: flex; align-items: center; gap: 10px;
+                    padding: 10px 14px; border-radius: 13px;
+                    border: none; width: calc(100% - 28px); text-align: left;
+                    font-family: 'Kanit', sans-serif; font-size: 14px; font-weight: 500;
+                    cursor: pointer; transition: all 0.18s; text-decoration: none;
+                    color: #475569; background: transparent;
+                }
+                .lnav-setting-btn:hover { background: rgba(255,255,255,0.65); color: #1e40af; }
+                .lnav-setting-btn.active {
+                    background: rgba(255,255,255,0.82); color: #1d4ed8; font-weight: 700;
+                    border: 1px solid rgba(147,197,253,0.5);
+                }
+                .lnav-setting-btn.active .lnav-icon { background: linear-gradient(135deg,#3b82f6,#1d4ed8); color: #fff; }
+
+                .lnav-footer {
+                    padding: 14px 20px;
+                    border-top: 1px solid rgba(147,197,253,0.3);
+                    text-align: center; font-size: 12px; font-weight: 700;
+                    color: #3b82f6; letter-spacing: 1px;
+                }
+                .lnav-footer span { color: #1e293b; }
+            `}</style>
+
+            <div className="lnav-wrap">
+                <div className="lnav-header">
+                    <div className="lnav-logo-wrap">
+                        <Users size={28} color="#fff" />
+                    </div>
+                    <div className="lnav-title">หัวหน้างาน</div>
+                    <div className="lnav-sub">Leader Panel</div>
+                    <button className="lnav-logout-btn" onClick={handleLogout}>
+                        <LogOut size={14} /> ออกจากระบบ
                     </button>
                 </div>
+
+                <div className="lnav-menu">
+                    <div className="lnav-section-label">เมนูหลัก</div>
+                    {menus.map(m => (
+                        <Link key={m.to} to={m.to} className={`lnav-menu-btn ${activeMenu === m.to ? 'active' : ''}`}>
+                            <div className="lnav-icon">{m.icon}</div>
+                            {m.label}
+                        </Link>
+                    ))}
+                </div>
+
+                <Link to="/leader-setting" className={`lnav-setting-btn ${activeMenu === '/leader-setting' ? 'active' : ''}`}>
+                    <div className="lnav-icon"><Settings size={17} /></div>
+                    ตั้งค่า
+                </Link>
+
+                <div className="lnav-footer">TECH <span>JOB</span></div>
             </div>
-
-            <p className='mt-2 text-light mx-4'>Main Menu</p>
-
-            <Link to="/leader">
-                <button
-                    className={getButtonClass('/leader')}
-                    onClick={() => setActiveMenu('/leader')}
-                >
-                    หน้าหลัก
-                </button>
-            </Link>
-
-            <Link to="/leader-list">
-                <button
-                    className={getButtonClass('/leader-list')}
-                    onClick={() => setActiveMenu('/leader-list')}
-                >
-                    รายชื่อ
-                </button>
-            </Link>
-
-            <Link to="/leader-setting">
-                <button
-                    className={`btn  ${activeMenu === '/leader-setting' ? 'btn-light' : 'text-light'}`} style={{ position: 'absolute', bottom: '0.2rem', left: '0.3rem',borderRadius:"90px" }}
-                    onClick={() => setActiveMenu('/leader-setting')}
-                >
-                    <i className="bi bi-gear" style={{ fontSize: "30px" }}></i>
-                </button>
-            </Link>
-        </div>
+        </>
     )
 }
 
-export default leaderNavbar
+export default LeaderNavbar
